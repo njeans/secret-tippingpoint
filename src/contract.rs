@@ -55,8 +55,7 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     let mut batch_key = [CONFIG_KEY_B,&bid];
     let batch_key:&[u8] = &batch_key.concat();
 
-    // config(&mut deps.storage, batch_key).save(&state)?;
-
+    register(&mut deps.storage, &batch_key, &state);
     debug_print("batch saved successfully");
     Ok(HandleResponse::default())
 }
@@ -71,8 +70,7 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     let patient_key:&[u8] = &patient_key.concat();
     let state = false;
 
-    // config(&mut deps.storage, patient_key).save(&state)?;
-
+    register(&mut deps.storage, &patient_key, &state);
     debug_print("patient added successfully");
     Ok(HandleResponse::default())
 }
@@ -85,22 +83,27 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     let mut patient_key = [CONFIG_KEY_P,&st,&bid];
     let patient_key:&[u8] = &patient_key.concat();
-    let st_used: bool = config_read(&deps.storage, patient_key).load()?;
+    let st_used: bool = load(&deps.storage, &patient_key)?;
 
     if !st_used {
         let mut batch_key = [CONFIG_KEY_B,&bid];
         let batch_key:&[u8] = &batch_key.concat();
-        let batch_state: BatchState = config_read(&deps.storage, batch_key).load()?;
+        let mut batch_state: BatchState = match load(&deps.storage, &batch_key) {
+            Ok(x) => x,
+            Err(e) => {
+                return Err(e);
+            }
+        };
         batch_state.count += 1;
-        // config(&mut deps.storage, batch_key).save(&batch_state)?;
+        register(&mut deps.storage, &batch_key, &batch_state);
         debug_print("patient symptom added successfully");
-        Ok(HandleResponse::default())
+        return Ok(HandleResponse::default())
 
     } else {
-        Err(StdError::GenericErr{
+        return Err(StdError::GenericErr{
             msg: "Symptom token already used".to_string(),
             backtrace: None
-        })
+        });
     }
 
 }
