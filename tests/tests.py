@@ -29,9 +29,7 @@ def runcmd(cmd, canFail = False):
     print(cmd)
     result = subprocess.run(cmd, stdout=subprocess.PIPE, shell=True)
     if result.returncode != 0:
-      match result.returncode:
-        case _:
-          print(f"UNKNOWN ERROR {result.returncode}")
+      print(f"UNKNOWN ERROR {result.returncode}")
       raise BaseException("Failed")
   except subprocess.CalledProcessError as e:
     result = e
