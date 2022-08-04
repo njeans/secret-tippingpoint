@@ -13,7 +13,6 @@ pub static CONFIG_KEY_B: &[u8] = b"batches";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
-    pub count: i32,
     pub owner: CanonicalAddr,
 }
 
@@ -22,16 +21,9 @@ pub type PharmacistId = CanonicalAddr;
 pub type SymptomToken = [u8; 32];
 pub type BatchId = [u8; 32];
 
-type ManufactureList = Vec<ManufactureId>;
-
-type PharmacistList = Vec<PharmacistId>;
-
-type BatchList = HashMap<BatchId, BatchState>;
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct BatchState {
     pub locations: String,
-    pub symptoms: HashMap<SymptomToken, bool>,
     pub threshold: u64,
     pub count: u64,
 }
