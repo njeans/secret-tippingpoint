@@ -64,7 +64,7 @@ def CreateWallet(seed, name):
 
 def publishAndInitContract(name, /, *, params='{}', path=PROJECT_PATH, walletName=walletName1):
   os.chdir(PROJECT_PATH)
-  runcmd("make build")
+  # runcmd("make build")
   _, codeId = runcmd(f"secretcli tx compute store contract.wasm.gz --from {walletName} --gas 2000000 -y")
   codeId = json.loads(codeId.strip())['logs'][0]['events'][0]['attributes'][3]['value']
   print(f"Contract stored successfully! Code ID: {codeId}")

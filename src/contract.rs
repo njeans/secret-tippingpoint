@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    debug_print, to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
+    to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
     StdError, StdResult, Storage,
 };
 
@@ -18,21 +18,21 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 
     config(&mut deps.storage).save(&state)?;
 
-    for pharmacist in msg.pharmacists {
-        let key = [CONFIG_KEY_P, pharmacist.as_slice()];
-        let key = key.concat();
-        let p_state = true;
-        register(&mut deps.storage, &key, &p_state).ok();
-    }
+    // for pharmacist in msg.pharmacists {
+    //     let key = [CONFIG_KEY_P, pharmacist.as_slice()];
+    //     let key = key.concat();
+    //     let p_state = true;
+    //     register(&mut deps.storage, &key, &p_state).ok();
+    // }
 
-    for manufacturer in msg.manufacturers {
-        let key = [CONFIG_KEY_M, manufacturer.as_slice()];
-        let key = key.concat();
-        let m_state = true;
-        register(&mut deps.storage, &key, &m_state).ok();
-    }
+    // for manufacturer in msg.manufacturers {
+    //     let key = [CONFIG_KEY_M, manufacturer.as_slice()];
+    //     let key = key.concat();
+    //     let m_state = true;
+    //     register(&mut deps.storage, &key, &m_state).ok();
+    // }
 
-    debug_print!("Contract was initialized by {}", env.message.sender);
+    // debug_print!("Contract was initialized by {}", env.message.sender);
 
     Ok(InitResponse::default())
 }
@@ -80,7 +80,7 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
 
     match register(&mut deps.storage, &batch_key, &state) {
         Ok(_) => {
-            debug_print("batch saved successfully");
+            // debug_print("batch saved successfully");
             return Ok(HandleResponse::default());
         }
         Err(e) => Err(e)
@@ -110,7 +110,7 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
 
     match register(&mut deps.storage, &patient_key, &state) {
         Ok(_) => {
-            debug_print("patient added successfully");
+            // debug_print("patient added successfully");
             return Ok(HandleResponse::default());
         }
         Err(e) => Err(e)
@@ -140,7 +140,7 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
         batch_state.count += 1;
         match update(&mut deps.storage, &batch_key, &batch_state) {
             Ok(_) => {
-                debug_print("patient symptom added successfully");
+                // debug_print("patient symptom added successfully");
                 return Ok(HandleResponse::default());
             }
             Err(e) => Err(e)
