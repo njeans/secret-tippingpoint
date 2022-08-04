@@ -88,11 +88,8 @@ fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, bat
     if (state.count >= state.threshold) {
         return Ok(CheckBatchResponse { threshold_reached: true, locations: state.locations });
     } else {
-        return Ok(CheckBatchResponse { threshold_reached: true, locations: state.locations });
+        return Ok(CheckBatchResponse { threshold_reached: false, locations: state.locations });
     }
-
-
-
 }
 
 // #[cfg(test)]
