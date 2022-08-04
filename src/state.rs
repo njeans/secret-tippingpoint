@@ -26,7 +26,7 @@ pub type BatchId = [u8; 32];
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct BatchState {
-    pub locations: String,
+    pub locations: Vec<String>,
     pub threshold: u64,
     pub count: u64,
 }
