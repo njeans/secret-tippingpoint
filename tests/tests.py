@@ -115,26 +115,27 @@ def testCreation():
   rv = queryContract(addr, 'check_batch', {'batch_id': 0})
   assert rv == ""
   rv = queryContract(addr, 'check_batch', {'batch_id': 1})
-  assert(rv['count'] == 0)
+  assert rv['threshold_reached'] == False
 
   rv = executeContract(addr, 'create_batch', {'batch_id': 0, 'locations': [], 'threshold': 2}, caller=walletName2)
   assert rv['code'] == 0
   rv = queryContract(addr, 'check_batch', {'batch_id': 0})
-  assert(rv['count'] == 0)
+  assert rv['threshold_reached'] == False
   rv = queryContract(addr, 'check_batch', {'batch_id': 1})
-  assert(rv['count'] == 0)
+  assert rv['threshold_reached'] == False
 
 
   # Double creation:
   #
-  rv = executeContract(addr, 'create', {'id': 0})
+  rv = executeContract(addr, 'create_batch', {'batch_id': 0, 'locations': [], 'threshold': 2}, caller=walletName2)
   assert rv['code'] == 3
 
   # Non leader creation:
   #
-  rv = executeContract(addr, 'create', {'id': 4}, caller=walletName2)
+  rv = executeContract(addr, 'create_batch', {'batch_id': 4, 'locations': [], 'threshold': 2}, caller=walletName3)
   assert rv['code'] == 3
-  rv = executeContract(addr, 'create', {'id': 4})
+
+  rv = executeContract(addr, 'create_batch', {'batch_id': 4, 'locations': [], 'threshold': 2}, caller=walletName2)
   assert rv['code'] == 0
 
   

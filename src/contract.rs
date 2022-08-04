@@ -2,6 +2,7 @@ use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
     StdError, StdResult, Storage, CanonicalAddr,
 };
+use base64::encode;
 
 use crate::msg::{HandleMsg, InitMsg, QueryMsg, CheckBatchResponse};
 use crate::state::*;
@@ -46,12 +47,11 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     env: Env,
     msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
-    match msg {
+    return match msg {
         HandleMsg::CreateBatch { batch_id, locations, threshold} => try_create_batch(deps, env, batch_id, locations, threshold),
         HandleMsg::AddPatient { symptom_token, batch_id } => try_add_patient(deps, env, symptom_token, batch_id ),
         HandleMsg::AddSymptom { symptom_token, batch_id  } => try_add_symptom(deps, env, symptom_token, batch_id),
     };
-    Ok(HandleResponse::default())
 }
 
 pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
@@ -62,16 +62,16 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     t: u64,
 ) -> StdResult<HandleResponse> {
 
-    let m_id = deps.api.canonical_address(&env.message.sender)?;
-    let m_key = [CONFIG_KEY_M, m_id.as_slice()];
-    let m_key = m_key.concat();
-    let m_exists: bool = load(&deps.storage, &m_key)?;
-    if !m_exists {
-        return Err(StdError::GenericErr{
-            msg: "Manufacturer id not found".to_string(),
-            backtrace: None
-        });
-    }
+    // let m_id = deps.api.canonical_address(&env.message.sender)?;
+    // let m_key = [CONFIG_KEY_M, m_id.as_slice()];
+    // let m_key = m_key.concat();
+    // let m_exists: bool = load(&deps.storage, &m_key)?;
+    // if !m_exists {
+    //     return Err(StdError::GenericErr{
+    //         msg: "Manufacturer id not found".to_string(),
+    //         backtrace: None
+    //     });
+    // }
 
     let state = BatchState {
         locations: l,
@@ -81,6 +81,11 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
 
     let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
     let batch_key:&[u8] = &batch_key.concat();
+
+    // return Err(StdError::GenericErr{
+    //     msg: "Failing on purpose for key: ".to_string() + &base64::encode(&batch_key),
+    //     backtrace: None
+    // });
 
     match register(&mut deps.storage, &batch_key, &state) {
         Ok(_) => {
@@ -172,9 +177,9 @@ fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, bat
     let key = key.concat();
     // The following is failing, why?
     let state: StdResult<BatchState> = load(&deps.storage, &key);
-    if (state.is_err()) {
+    if !(state.is_ok()) {
         return Err(StdError::GenericErr{
-            msg: "Batch id not found".to_string(),
+            msg: "Batch id not found".to_string() + &base64::encode(&key),
             backtrace: None
         });
     }
