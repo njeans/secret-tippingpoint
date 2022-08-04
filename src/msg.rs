@@ -5,8 +5,8 @@ use crate::state::{ManufactureId, PharmacistId, SymptomToken, BatchId};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InitMsg {
-    // pub pharmacists: Vec<PharmacistId>,
-    // pub manufacturers: Vec<ManufactureId>
+    pub pharmacists: Vec<PharmacistId>,
+    pub manufacturers: Vec<ManufactureId>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

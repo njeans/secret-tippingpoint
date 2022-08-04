@@ -14,6 +14,15 @@ walletAddress3 = "secret1k0zep9739y8j5fat3du9zvmln9msdfmdfvxjch"
 walletSeed3 = "aspect pepper bridge armed bulk loyal husband mushroom rival rural mammal sure \n" #Test net seed, ok to leak
 walletName3 = 'USER3'
 
+walletAddress4 = "secret14dygjy2em5xfy8gnx6cdgvkcndvh4e79lpvjjm"
+walletSeed4 = "finish science choose night develop jump keen verify ethics network drift cheap \n" #Test net seed, ok to leak
+walletName4 = 'USER4'
+
+walletAddress5 = "secret1hhexexxhvdgnw8ts7tas08luxf30v2zmftrd4f"
+walletSeed5 = "sibling museum rural industry equal senior salmon evolve science parrot receive stay \n" #Test net seed, ok to leak
+walletName5 = 'USER5'
+
+
 PROJECT_PATH = "./"
 
 import subprocess
@@ -55,6 +64,8 @@ def Setup():
   CreateWallet(walletSeed1, walletName1)
   CreateWallet(walletSeed2, walletName2)
   CreateWallet(walletSeed3, walletName3)
+  CreateWallet(walletSeed4, walletName4)
+  CreateWallet(walletSeed5, walletName5)
 
 def CreateWallet(seed, name):
   runcmd(f"secretcli keys delete {name} -y", True)
@@ -64,7 +75,7 @@ def CreateWallet(seed, name):
 
 def publishAndInitContract(name, /, *, params='{}', path=PROJECT_PATH, walletName=walletName1):
   os.chdir(PROJECT_PATH)
-  # runcmd("make build")
+  runcmd("make build")
   _, codeId = runcmd(f"secretcli tx compute store contract.wasm.gz --from {walletName} --gas 2000000 -y")
   codeId = json.loads(codeId.strip())['logs'][0]['events'][0]['attributes'][3]['value']
   print(f"Contract stored successfully! Code ID: {codeId}")
@@ -88,24 +99,31 @@ def executeContract(contractAddress, functionName, arg={}, /, *, caller=walletNa
 
 #
 
+# CreateBatch { batch_id: BatchId, locations: Vec<String>, threshold: u64},
+# AddPatient { symptom_token: SymptomToken, batch_id: BatchId},
+# AddSymptom { symptom_token: SymptomToken, batch_id: BatchId}
+
 def testCreation():
   name = randomHexStr()
-  id, addr = publishAndInitContract(name, params='{}')
-  rv = queryContract(addr, 'get_count', {'id': 1})
+  id, addr = publishAndInitContract(name, params=f'{{"pharmacists": ["{walletAddress2}"], "manufacturers": ["{walletAddress3}"]}}')
+  rv = queryContract(addr, 'check_batch', {'batch_id': 0})
   assert rv == ""
-  rv = executeContract(addr, 'create', {'id': 1})
-  rv = queryContract(addr, 'get_count', {'id': 1})
-  assert(rv['count'] == 0)
-  rv = queryContract(addr, 'get_count', {'id': 0})
+  rv = queryContract(addr, 'check_batch', {'batch_id': 1})
   assert rv == ""
-  rv = queryContract(addr, 'get_count', {'id': 2})
+  rv = executeContract(addr, 'create_batch', {'batch_id': 1, 'locations': [], 'threshold': 2}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 0})
   assert rv == ""
-  rv = executeContract(addr, 'create', {'id': 0})
-  rv = queryContract(addr, 'get_count', {'id': 0})
+  rv = queryContract(addr, 'check_batch', {'batch_id': 1})
   assert(rv['count'] == 0)
-  rv = executeContract(addr, 'create', {'id': 2})
-  rv = queryContract(addr, 'get_count', {'id': 2})
+
+  rv = executeContract(addr, 'create_batch', {'batch_id': 0, 'locations': [], 'threshold': 2}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 0})
   assert(rv['count'] == 0)
+  rv = queryContract(addr, 'check_batch', {'batch_id': 1})
+  assert(rv['count'] == 0)
+
 
   # Double creation:
   #

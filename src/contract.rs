@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
-    StdError, StdResult, Storage,
+    StdError, StdResult, Storage, CanonicalAddr,
 };
 
 use crate::msg::{HandleMsg, InitMsg, QueryMsg, CheckBatchResponse};
@@ -15,22 +15,26 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     let state = State {
         owner: deps.api.canonical_address(&env.message.sender)?,
     };
+    
 
     config(&mut deps.storage).save(&state)?;
 
-    // for pharmacist in msg.pharmacists {
-    //     let key = [CONFIG_KEY_P, pharmacist.as_slice()];
-    //     let key = key.concat();
-    //     let p_state = true;
-    //     register(&mut deps.storage, &key, &p_state).ok();
-    // }
+    // UNDONE(): The following is failing:
+    for pharmacist in msg.pharmacists {
+        let pharm_can = deps.api.canonical_address(&pharmacist)?;
+        let key = [CONFIG_KEY_P, pharm_can.as_slice()];
+        let key = key.concat();
+        let p_state = true;
+        register(&mut deps.storage, &key, &p_state).ok();
+    }
 
-    // for manufacturer in msg.manufacturers {
-    //     let key = [CONFIG_KEY_M, manufacturer.as_slice()];
-    //     let key = key.concat();
-    //     let m_state = true;
-    //     register(&mut deps.storage, &key, &m_state).ok();
-    // }
+    for manufacturer in msg.manufacturers {
+        let manuf_can = deps.api.canonical_address(&manufacturer)?;
+        let key = [CONFIG_KEY_M, manuf_can.as_slice()];
+        let key = key.concat();
+        let m_state = true;
+        register(&mut deps.storage, &key, &m_state).ok();
+    }
 
     // debug_print!("Contract was initialized by {}", env.message.sender);
 
@@ -75,13 +79,13 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
         count : 0
     };
 
-    let batch_key = [CONFIG_KEY_B,&bid];
+    let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
     let batch_key:&[u8] = &batch_key.concat();
 
     match register(&mut deps.storage, &batch_key, &state) {
         Ok(_) => {
             // debug_print("batch saved successfully");
-            return Ok(HandleResponse::default());
+            Ok(HandleResponse::default())
         }
         Err(e) => Err(e)
     }
@@ -104,7 +108,7 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
         });
     }
 
-    let patient_key = [CONFIG_KEY_P,&st,&bid];
+    let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
     let patient_key:&[u8] = &patient_key.concat();
     let state = false;
 
@@ -124,12 +128,12 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
     st: SymptomToken,
     bid: BatchId,
 ) -> StdResult<HandleResponse> {
-    let patient_key = [CONFIG_KEY_P,&st,&bid];
+    let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
     let patient_key:&[u8] = &patient_key.concat();
     let st_used: bool = load(&deps.storage, &patient_key)?;
 
     if !st_used {
-        let mut batch_key = [CONFIG_KEY_B,&bid];
+        let mut batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
         let batch_key:&[u8] = &batch_key.concat();
         let mut batch_state: BatchState = match load(&deps.storage, &batch_key) {
             Ok(x) => x,
@@ -164,11 +168,15 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
 }
 
 fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, batchId: BatchId) -> StdResult<CheckBatchResponse> {
-    let mut key = [CONFIG_KEY_B, &batchId];
+    let mut key = [CONFIG_KEY_B, &batchId.to_be_bytes()];
     let key = key.concat();
+    // The following is failing, why?
     let state: StdResult<BatchState> = load(&deps.storage, &key);
     if (state.is_err()) {
-        return Err(StdError::Unauthorized { backtrace: None });
+        return Err(StdError::GenericErr{
+            msg: "Batch id not found".to_string(),
+            backtrace: None
+        });
     }
     let state = state.ok().unwrap();
 

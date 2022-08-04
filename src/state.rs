@@ -2,7 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::vec::Vec;
 use std::collections::HashMap;
-use cosmwasm_std::{CanonicalAddr, Storage, ReadonlyStorage, StdResult, StdError};
+use cosmwasm_std::{CanonicalAddr, Storage, ReadonlyStorage, StdResult, StdError, HumanAddr};
 use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
 use secret_toolkit::serialization::{Bincode2, Serde};
 use std::{any::type_name};
@@ -19,10 +19,10 @@ pub struct State {
     pub owner: CanonicalAddr,
 }
 
-pub type ManufactureId = CanonicalAddr;
-pub type PharmacistId = CanonicalAddr;
-pub type SymptomToken = [u8; 32];
-pub type BatchId = [u8; 32];
+pub type ManufactureId = HumanAddr;
+pub type PharmacistId = HumanAddr;
+pub type SymptomToken = u64;
+pub type BatchId = u64;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct BatchState {
