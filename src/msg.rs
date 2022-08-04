@@ -6,8 +6,8 @@ use crate::state::{ManufactureId, PharmacistId, SymptomToken, BatchId};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InitMsg {
-    pub pharmacists: Vec<ManufactureId>,
-    pub manufacturers: Vec<PharmacistId>
+    pub pharmacists: Vec<PharmacistId>,
+    pub manufacturers: Vec<ManufactureId>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -15,7 +15,7 @@ pub struct InitMsg {
 pub enum HandleMsg {
     Increment {},
     Reset { count: i32 },
-    CreateBatch { batch_id: String, locations: String, threshold: u64},
+    CreateBatch { batch_id: String, locations: Vec<String>, threshold: u64},
     AddPatient { symptom_token: SymptomToken, batch_id: BatchId},
     AddSymptom { symptom_token: SymptomToken, batch_id: BatchId}
 }
