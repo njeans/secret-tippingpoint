@@ -104,7 +104,7 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
             }
         };
         batch_state.count += 1;
-        match register(&mut deps.storage, &batch_key, &batch_state) {
+        match update(&mut deps.storage, &batch_key, &batch_state) {
             Ok(_) => {
                 debug_print("patient symptom added successfully");
                 return Ok(HandleResponse::default());
