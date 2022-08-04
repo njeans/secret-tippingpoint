@@ -5,17 +5,6 @@
     {
       "type": "object",
       "required": [
-        "get_count"
-      ],
-      "properties": {
-        "get_count": {
-          "type": "object"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "required": [
         "check_batch"
       ],
       "properties": {

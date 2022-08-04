@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CheckBatchResponse",
+  "type": "object",
+  "required": [
+    "locations",
+    "threshold_reached"
+  ],
+  "properties": {
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "threshold_reached": {
+      "type": "boolean"
+    }
+  }
+}
