@@ -62,16 +62,16 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     t: u64,
 ) -> StdResult<HandleResponse> {
 
-    // let m_id = deps.api.canonical_address(&env.message.sender)?;
-    // let m_key = [CONFIG_KEY_M, m_id.as_slice()];
-    // let m_key = m_key.concat();
-    // let m_exists: bool = load(&deps.storage, &m_key)?;
-    // if !m_exists {
-    //     return Err(StdError::GenericErr{
-    //         msg: "Manufacturer id not found".to_string(),
-    //         backtrace: None
-    //     });
-    // }
+    let m_id = deps.api.canonical_address(&env.message.sender)?;
+    let m_key = [CONFIG_KEY_M, m_id.as_slice()];
+    let m_key = m_key.concat();
+    let m_exists: bool = load(&deps.storage, &m_key).unwrap_or(false);
+    if !m_exists {
+        return Err(StdError::GenericErr{
+            msg: "Manufacturer id not found".to_string(),
+            backtrace: None
+        });
+    }
 
     let state = BatchState {
         locations: l,
