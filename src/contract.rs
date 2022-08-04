@@ -4,8 +4,8 @@ use cosmwasm_std::{
 };
 
 use crate::msg::{HandleMsg, InitMsg, QueryMsg, CheckBatchResponse};
-use crate::state::{config, config_read, State, BatchState, BatchId, load, may_load, update, register};
-use crate::state::{CONFIG_KEY_B};
+use crate::state::*;
+
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -19,6 +19,8 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 
     // config(&mut deps.storage).save(&state)?;
 
+
+
     debug_print!("Contract was initialized by {}", env.message.sender);
 
     Ok(InitResponse::default())
@@ -29,42 +31,78 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     env: Env,
     msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
-    // match msg {
-    //     HandleMsg::Increment {} => try_increment(deps, env),
-    //     HandleMsg::Reset { count } => try_reset(deps, env, count),
-    // }
+    match msg {
+        HandleMsg::CreateBatch { batch_id, locations, threshold} => try_create_batch(deps, env, batch_id, locations, threshold),
+        HandleMsg::AddPatient { symptom_token, batch_id } => try_add_patient(deps, env, symptom_token, batch_id ),
+        HandleMsg::AddSymptom { symptom_token, batch_id  } => try_add_symptom(deps, env, symptom_token, batch_id),
+    };
     Ok(HandleResponse::default())
 }
 
-pub fn try_increment<S: Storage, A: Api, Q: Querier>(
+pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     _env: Env,
+    bid: BatchId,
+    l: Vec<String>,
+    t: u64,
 ) -> StdResult<HandleResponse> {
-    // config(&mut deps.storage).update(|mut state| {
-    //     state.count += 1;
-    //     debug_print!("count = {}", state.count);
-    //     Ok(state)
-    // })?;
+    let state = BatchState {
+        locations: l,
+        threshold: t,
+        count : 0
+    };
 
-    debug_print("count incremented successfully");
+    let mut batch_key = [CONFIG_KEY_B,&bid];
+    let batch_key:&[u8] = &batch_key.concat();
+
+    // config(&mut deps.storage, batch_key).save(&state)?;
+
+    debug_print("batch saved successfully");
     Ok(HandleResponse::default())
 }
 
-pub fn try_reset<S: Storage, A: Api, Q: Querier>(
+pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
-    env: Env,
-    count: i32,
+    _env: Env,
+    st: SymptomToken,
+    bid: BatchId,
 ) -> StdResult<HandleResponse> {
-    // let sender_address_raw = deps.api.canonical_address(&env.message.sender)?;
-    // config(&mut deps.storage).update(|mut state| {
-    //     if sender_address_raw != state.owner {
-    //         return Err(StdError::Unauthorized { backtrace: None });
-    //     }
-    //     state.count = count;
-    //     Ok(state)
-    // })?;
-    debug_print("count reset successfully");
+    let mut patient_key = [CONFIG_KEY_P,&st,&bid];
+    let patient_key:&[u8] = &patient_key.concat();
+    let state = false;
+
+    // config(&mut deps.storage, patient_key).save(&state)?;
+
+    debug_print("patient added successfully");
     Ok(HandleResponse::default())
+}
+
+pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
+    deps: &mut Extern<S, A, Q>,
+    _env: Env,
+    st: SymptomToken,
+    bid: BatchId,
+) -> StdResult<HandleResponse> {
+    let mut patient_key = [CONFIG_KEY_P,&st,&bid];
+    let patient_key:&[u8] = &patient_key.concat();
+    let st_used: bool = config_read(&deps.storage, patient_key).load()?;
+
+    if !st_used {
+        let mut batch_key = [CONFIG_KEY_B,&bid];
+        let batch_key:&[u8] = &batch_key.concat();
+        let batch_state: BatchState = config_read(&deps.storage, batch_key).load()?;
+        batch_state.count += 1;
+        // config(&mut deps.storage, batch_key).save(&batch_state)?;
+        debug_print("patient symptom added successfully");
+        Ok(HandleResponse::default())
+
+    } else {
+        Err(StdError::GenericErr{
+            msg: "Symptom token already used".to_string(),
+            backtrace: None
+        })
+    }
+
 }
 
 pub fn query<S: Storage, A: Api, Q: Querier>(

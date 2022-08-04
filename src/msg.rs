@@ -13,7 +13,7 @@ pub struct InitMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HandleMsg {
-    CreateBatch { batch_id: String, locations: Vec<String>, threshold: u64},
+    CreateBatch { batch_id: BatchId, locations: Vec<String>, threshold: u64},
     // store K=batch_id V = batch struct
     AddPatient { symptom_token: SymptomToken, batch_id: BatchId},
     // storage K=symptom_token||batch_id V=bool
