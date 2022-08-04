@@ -52,12 +52,16 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
         count : 0
     };
 
-    let mut batch_key = [CONFIG_KEY_B,&bid];
+    let batch_key = [CONFIG_KEY_B,&bid];
     let batch_key:&[u8] = &batch_key.concat();
 
-    register(&mut deps.storage, &batch_key, &state);
-    debug_print("batch saved successfully");
-    Ok(HandleResponse::default())
+    match register(&mut deps.storage, &batch_key, &state) {
+        Ok(_) => {
+            debug_print("batch saved successfully");
+            return Ok(HandleResponse::default());
+        }
+        Err(e) => Err(e)
+    }
 }
 
 pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
@@ -66,13 +70,18 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     st: SymptomToken,
     bid: BatchId,
 ) -> StdResult<HandleResponse> {
-    let mut patient_key = [CONFIG_KEY_P,&st,&bid];
+    let patient_key = [CONFIG_KEY_P,&st,&bid];
     let patient_key:&[u8] = &patient_key.concat();
     let state = false;
 
-    register(&mut deps.storage, &patient_key, &state);
-    debug_print("patient added successfully");
-    Ok(HandleResponse::default())
+    match register(&mut deps.storage, &patient_key, &state) {
+        Ok(_) => {
+            debug_print("patient added successfully");
+            return Ok(HandleResponse::default());
+        }
+        Err(e) => Err(e)
+    }
+
 }
 
 pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
@@ -81,7 +90,7 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
     st: SymptomToken,
     bid: BatchId,
 ) -> StdResult<HandleResponse> {
-    let mut patient_key = [CONFIG_KEY_P,&st,&bid];
+    let patient_key = [CONFIG_KEY_P,&st,&bid];
     let patient_key:&[u8] = &patient_key.concat();
     let st_used: bool = load(&deps.storage, &patient_key)?;
 
@@ -95,10 +104,13 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
             }
         };
         batch_state.count += 1;
-        register(&mut deps.storage, &batch_key, &batch_state);
-        debug_print("patient symptom added successfully");
-        return Ok(HandleResponse::default())
-
+        match register(&mut deps.storage, &batch_key, &batch_state) {
+            Ok(_) => {
+                debug_print("patient symptom added successfully");
+                return Ok(HandleResponse::default());
+            }
+            Err(e) => Err(e)
+        }
     } else {
         return Err(StdError::GenericErr{
             msg: "Symptom token already used".to_string(),

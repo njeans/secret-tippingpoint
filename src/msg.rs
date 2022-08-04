@@ -1,6 +1,5 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::CanonicalAddr;
 
 use crate::state::{ManufactureId, PharmacistId, SymptomToken, BatchId};
 
