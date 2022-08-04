@@ -12,14 +12,25 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     env: Env,
     msg: InitMsg,
 ) -> StdResult<InitResponse> {
-    // let state = State {
-    //     count: msg.count,
-    //     owner: deps.api.canonical_address(&env.message.sender)?,
-    // };
+    let state = State {
+        owner: deps.api.canonical_address(&env.message.sender)?,
+    };
 
-    // config(&mut deps.storage).save(&state)?;
+    config(&mut deps.storage).save(&state)?;
 
+    for pharmacist in msg.pharmacists {
+        let key = [CONFIG_KEY_P, pharmacist.as_slice()];
+        let key = key.concat();
+        let p_state = true;
+        register(&mut deps.storage, &key, &p_state).ok();
+    }
 
+    for manufacturer in msg.manufacturers {
+        let key = [CONFIG_KEY_M, manufacturer.as_slice()];
+        let key = key.concat();
+        let m_state = true;
+        register(&mut deps.storage, &key, &m_state).ok();
+    }
 
     debug_print!("Contract was initialized by {}", env.message.sender);
 
@@ -41,11 +52,23 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
 
 pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
-    _env: Env,
+    env: Env,
     bid: BatchId,
     l: Vec<String>,
     t: u64,
 ) -> StdResult<HandleResponse> {
+
+    let m_id = deps.api.canonical_address(&env.message.sender)?;
+    let m_key = [CONFIG_KEY_M, m_id.as_slice()];
+    let m_key = m_key.concat();
+    let m_exists: bool = load(&deps.storage, &m_key)?;
+    if !m_exists {
+        return Err(StdError::GenericErr{
+            msg: "Manufacturer id not found".to_string(),
+            backtrace: None
+        });
+    }
+
     let state = BatchState {
         locations: l,
         threshold: t,
@@ -66,10 +89,21 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
 
 pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
-    _env: Env,
+    env: Env,
     st: SymptomToken,
     bid: BatchId,
 ) -> StdResult<HandleResponse> {
+    let p_id = deps.api.canonical_address(&env.message.sender)?;
+    let p_key = [CONFIG_KEY_P, p_id.as_slice()];
+    let p_key = p_key.concat();
+    let p_exists: bool = load(&deps.storage, &p_key)?;
+    if !p_exists {
+        return Err(StdError::GenericErr{
+            msg: "Pharmacist id not found".to_string(),
+            backtrace: None
+        });
+    }
+
     let patient_key = [CONFIG_KEY_P,&st,&bid];
     let patient_key:&[u8] = &patient_key.concat();
     let state = false;
