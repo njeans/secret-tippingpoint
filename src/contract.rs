@@ -82,11 +82,6 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
     let batch_key:&[u8] = &batch_key.concat();
 
-    // return Err(StdError::GenericErr{
-    //     msg: "Failing on purpose for key: ".to_string() + &base64::encode(&batch_key),
-    //     backtrace: None
-    // });
-
     match register(&mut deps.storage, &batch_key, &state) {
         Ok(_) => {
             // debug_print("batch saved successfully");
