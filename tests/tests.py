@@ -146,6 +146,20 @@ def testToken():
   assert rv['code'] == 0
   rv = queryContract(addr, 'check_batch', {'batch_id': 42})
   assert rv['threshold_reached'] == False
+
+  # Adding a symptom without approval token should fail:
+  #
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 1, 'batch_id': 42}, caller=walletName1)
+  assert rv['code'] == 3
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 1, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 3
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 1, 'batch_id': 42}, caller=walletName3)
+  assert rv['code'] == 3
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == False
+
+  # Adding tokens and symptoms should work:
+  #
   rv = executeContract(addr, 'add_patient', {'symptom_token': 1, 'batch_id': 42}, caller=walletName2)
   assert rv['code'] == 0
   rv = executeContract(addr, 'add_patient', {'symptom_token': 2, 'batch_id': 42}, caller=walletName2)
@@ -165,8 +179,35 @@ def testToken():
   rv = queryContract(addr, 'check_batch', {'batch_id': 42})
   assert rv['threshold_reached'] == True
 
+  # OnlyPharmacyCanCreateTokens:
+  #
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 500, 'batch_id': 42}, caller=walletName3)
+  assert rv['code'] == 3
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 500, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
 
-  
+  # Can't create tokens for non existing batches:
+  #
+  # UNDONE(1): Make sure batch exist:
+  # 
+  # rv = executeContract(addr, 'add_patient', {'symptom_token': 404, 'batch_id': 4919}, caller=walletName2)
+  # assert rv['code'] == 3
+
+  # Tokens get consumed after being used:
+  #
+  rv = executeContract(addr, 'create_batch', {'batch_id': 4919, 'locations': [], 'threshold': 2}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName1)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName2)
+  assert rv['code'] == 3
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName3)
+  assert rv['code'] == 3
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == True
+
 
   
   

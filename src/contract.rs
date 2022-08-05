@@ -1,8 +1,9 @@
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
-    StdError, StdResult, Storage, CanonicalAddr,
+    StdError, StdResult, Storage, 
+    // CanonicalAddr,
 };
-use base64::encode;
+// use base64::encode;
 
 use crate::msg::{HandleMsg, InitMsg, QueryMsg, CheckBatchResponse};
 use crate::state::*;
@@ -107,6 +108,9 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
         });
     }
 
+    // UNDONE(1): Make sure batch exist:
+    //
+
     let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
     let patient_key:&[u8] = &patient_key.concat();
     let state = false;
@@ -129,10 +133,10 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
     let patient_key:&[u8] = &patient_key.concat();
-    let st_used: bool = load(&deps.storage, &patient_key).unwrap_or(false);
+    let st_used: bool = load(&deps.storage, &patient_key).unwrap_or(true);
 
     if !st_used {
-        let mut batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
+        let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
         let batch_key:&[u8] = &batch_key.concat();
         let mut batch_state: BatchState = match load(&deps.storage, &batch_key) {
             Ok(x) => x,
@@ -167,7 +171,7 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
 }
 
 fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, batchId: BatchId) -> StdResult<CheckBatchResponse> {
-    let mut key = [CONFIG_KEY_B, &batchId.to_be_bytes()];
+    let key = [CONFIG_KEY_B, &batchId.to_be_bytes()];
     let key = key.concat();
     // The following is failing, why?
     let state: StdResult<BatchState> = load(&deps.storage, &key);
