@@ -138,6 +138,37 @@ def testCreation():
   rv = executeContract(addr, 'create_batch', {'batch_id': 4, 'locations': [], 'threshold': 2}, caller=walletName3)
   assert rv['code'] == 0
 
+
+def testToken():
+  name = randomHexStr()
+  id, addr = publishAndInitContract(name, params=f'{{"pharmacists": ["{walletAddress2}"], "manufacturers": ["{walletAddress3}"]}}')
+  rv = executeContract(addr, 'create_batch', {'batch_id': 42, 'locations': [], 'threshold': 2}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == False
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 1, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 2, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 3, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 1, 'batch_id': 42}, caller=walletName1)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == False
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 2, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == True
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 3, 'batch_id': 42}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == True
+
+
+  
+
+  
   
 def testIncrement():
   name = randomHexStr()
@@ -207,5 +238,6 @@ def testCountBehavior():
 if __name__ == "__main__":
   Setup()
   testCreation()
-  testIncrement()
-  testCountBehavior()
+  testToken()
+  # testIncrement()
+  # testCountBehavior()
