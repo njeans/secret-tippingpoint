@@ -20,7 +20,6 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
 
     config(&mut deps.storage).save(&state)?;
 
-    // UNDONE(): The following is failing:
     for pharmacist in msg.pharmacists {
         let pharm_can = deps.api.canonical_address(&pharmacist)?;
         let key = [CONFIG_KEY_P, pharm_can.as_slice()];
