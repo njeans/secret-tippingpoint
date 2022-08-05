@@ -99,7 +99,7 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     let p_id = deps.api.canonical_address(&env.message.sender)?;
     let p_key = [CONFIG_KEY_P, p_id.as_slice()];
     let p_key = p_key.concat();
-    let p_exists: bool = load(&deps.storage, &p_key)?;
+    let p_exists: bool = load(&deps.storage, &p_key).unwrap_or(false);
     if !p_exists {
         return Err(StdError::GenericErr{
             msg: "Pharmacist id not found".to_string(),
@@ -129,7 +129,7 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
     let patient_key:&[u8] = &patient_key.concat();
-    let st_used: bool = load(&deps.storage, &patient_key)?;
+    let st_used: bool = load(&deps.storage, &patient_key).unwrap_or(false);
 
     if !st_used {
         let mut batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
