@@ -201,6 +201,7 @@ def testToken():
   assert rv['code'] == 0
   rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName1)
   assert rv['code'] == 0
+  ## UNDONE: this is not failing
   rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName2)
   assert rv['code'] == 3
   rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName3)
