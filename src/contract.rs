@@ -145,6 +145,17 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
                 return Err(e);
             }
         };
+
+        let token_key = [CONFIG_KEY_P, &st.to_be_bytes(), &bid.to_be_bytes()];
+        let token_key: &[u8] = &token_key.concat();
+        let token_state = true;
+        match update(&mut deps.storage, &token_key, &token_state) {
+            Ok(_) => {}
+            Err(e) => {
+                return Err(e)
+            }
+        }
+
         batch_state.count += 1;
         match update(&mut deps.storage, &batch_key, &batch_state) {
             Ok(_) => {
