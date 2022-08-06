@@ -1,11 +1,11 @@
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
-    StdError, StdResult, Storage, 
+    StdError, StdResult, Storage,
     // CanonicalAddr,
 };
 // use base64::encode;
 
-use crate::msg::{HandleMsg, InitMsg, QueryMsg, CheckBatchResponse};
+use crate::msg::*;
 use crate::state::*;
 
 
@@ -15,9 +15,10 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     msg: InitMsg,
 ) -> StdResult<InitResponse> {
     let state = State {
+        count: 123,
         owner: deps.api.canonical_address(&env.message.sender)?,
     };
-    
+
 
     config(&mut deps.storage).save(&state)?;
 
@@ -166,9 +167,16 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
     msg: QueryMsg,
 ) -> StdResult<Binary> {
     match msg {
+        QueryMsg::GetCount {} => to_binary(&query_count(deps)?),
         QueryMsg::CheckBatch { batch_id } => to_binary(&query_check_batch(&deps, batch_id)?),
     }
 }
+
+fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
+    let state = config_read(&deps.storage).load()?;
+    Ok(CountResponse { count: state.count })
+}
+
 
 fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, batchId: BatchId) -> StdResult<CheckBatchResponse> {
     let key = [CONFIG_KEY_B, &batchId.to_be_bytes()];
