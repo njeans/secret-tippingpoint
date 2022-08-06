@@ -105,14 +105,27 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     let p_exists: bool = load(&deps.storage, &p_key).unwrap_or(false);
     let m = format!("Pharmacist id: {} not found",p_id);
     if !p_exists {
+        let m = format!("Pharmacist id: {} not found", p_id);
         return Err(StdError::GenericErr{
             msg: m,
             backtrace: None
         });
     }
 
-    // UNDONE(1): Make sure batch exist:
-    //
+    let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
+    let batch_key:&[u8] = &batch_key.concat();
+
+     match load(&deps.storage, &batch_key) {
+        Ok(_) => { },
+        Err(e) => {
+            let m = format!("Batch id: {} does not exist", bid);
+            return Err(StdError::GenericErr{
+                msg: m,
+                backtrace: None
+            });
+        }
+    };
+
 
     let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
     let token_key:&[u8] = &token_key.concat();
