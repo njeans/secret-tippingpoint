@@ -115,10 +115,10 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
     let batch_key:&[u8] = &batch_key.concat();
 
-     match load(&deps.storage, &batch_key) {
-        Ok(_) => { },
+     let _batch_state: BatchState = match load(&deps.storage, &batch_key) {
+        Ok(x) => { x },
         Err(e) => {
-            let m = format!("Batch id: {} does not exist", bid);
+            let m = format!("Batch id: {} does not exist, {:?}", bid, e);
             return Err(StdError::GenericErr{
                 msg: m,
                 backtrace: None
@@ -127,7 +127,7 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     };
 
 
-    let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
+    let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),b"-",&bid.to_be_bytes()];
     let token_key:&[u8] = &token_key.concat();
     let token_state = false;
 
@@ -147,7 +147,7 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
     st: SymptomToken,
     bid: BatchId,
 ) -> StdResult<HandleResponse> {
-    let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
+    let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),b"-",&bid.to_be_bytes()];
     let token_key:&[u8] = &token_key.concat();
     let token_used: bool = load(&deps.storage, &token_key).unwrap_or(true);
 
@@ -161,8 +161,6 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
             }
         };
 
-        let token_key = [CONFIG_KEY_P, &st.to_be_bytes(), &bid.to_be_bytes()];
-        let token_key: &[u8] = &token_key.concat();
         let token_state = true;
         match update(&mut deps.storage, &token_key, &token_state) {
             Ok(_) => {}
