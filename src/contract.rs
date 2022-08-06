@@ -182,14 +182,16 @@ fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, bat
     let key = [CONFIG_KEY_B, &batchId.to_be_bytes()];
     let key = key.concat();
     // The following is failing, why?
-    let state: StdResult<BatchState> = load(&deps.storage, &key);
-    if !(state.is_ok()) {
-        return Err(StdError::GenericErr{
-            msg: "Batch id not found".to_string() + &base64::encode(&key),
-            backtrace: None
-        });
-    }
-    let state = state.ok().unwrap();
+    let state: BatchState = match load(&deps.storage, &key){
+        Ok(x) => x,
+        Err(e) => {
+            let m = format!("Batch id not found: {}, {:?}",batchId,e);
+            return Err(StdError::GenericErr{
+                msg: m,
+                backtrace: None
+            });
+        }
+    };
 
     if (state.count >= state.threshold) {
         return Ok(CheckBatchResponse { threshold_reached: true, locations: state.locations });

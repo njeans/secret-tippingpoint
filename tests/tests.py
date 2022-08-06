@@ -22,7 +22,7 @@ walletAddress5 = "secret1hhexexxhvdgnw8ts7tas08luxf30v2zmftrd4f"
 walletSeed5 = "sibling museum rural industry equal senior salmon evolve science parrot receive stay \n" #Test net seed, ok to leak
 walletName5 = 'USER5'
 
-
+NODE_ADDR = "https://rpc.pulsar.scrttestnet.com" #tcp://52.152.146.115:26657
 PROJECT_PATH = "./"
 
 import subprocess
@@ -57,10 +57,10 @@ def randomHexStr(len=10):
 
 def Setup():
   runcmd("secretcli config chain-id pulsar-2")
-  runcmd("secretcli config node https://rpc.pulsar.scrttestnet.com")
+  runcmd("secretcli config node " + NODE_ADDR)
   runcmd("secretcli config output json")
   runcmd("secretcli config keyring-backend test")
-  runcmd("secretcli config broadcast-mode block")  
+  runcmd("secretcli config broadcast-mode block")
   CreateWallet(walletSeed1, walletName1)
   CreateWallet(walletSeed2, walletName2)
   CreateWallet(walletSeed3, walletName3)
@@ -71,7 +71,7 @@ def CreateWallet(seed, name):
   runcmd(f"secretcli keys delete {name} -y", True)
   _, data = runcmd(f"echo '{seed}' | secretcli keys add {name} --recover || exit 1")
   address = json.loads(data)['address'].strip()
-  return address  
+  return address
 
 def publishAndInitContract(name, /, *, params='{}', path=PROJECT_PATH, walletName=walletName1):
   os.chdir(PROJECT_PATH)
@@ -142,7 +142,7 @@ def testCreation():
 def testToken():
   name = randomHexStr()
   id, addr = publishAndInitContract(name, params=f'{{"pharmacists": ["{walletAddress2}"], "manufacturers": ["{walletAddress3}"]}}')
-  rv = executeContract(addr, 'create_batch', {'batch_id': 42, 'locations': [], 'threshold': 2}, caller=walletName3)
+  rv = executeContract(addr, 'create_batch', {'batch_id': 42, 'locations': ["Ithaca, NY, USA: 08/01/2022 to 08/07/2022"], 'threshold': 2}, caller=walletName3)
   assert rv['code'] == 0
   rv = queryContract(addr, 'check_batch', {'batch_id': 42})
   assert rv['threshold_reached'] == False
@@ -178,6 +178,7 @@ def testToken():
   assert rv['code'] == 0
   rv = queryContract(addr, 'check_batch', {'batch_id': 42})
   assert rv['threshold_reached'] == True
+  assert rv['locations'] == ["Ithaca, NY, USA: 08/01/2022 to 08/07/2022"]
 
   # OnlyPharmacyCanCreateTokens:
   #
@@ -189,7 +190,7 @@ def testToken():
   # Can't create tokens for non existing batches:
   #
   # UNDONE(1): Make sure batch exist:
-  # 
+  #
   # rv = executeContract(addr, 'add_patient', {'symptom_token': 404, 'batch_id': 4919}, caller=walletName2)
   # assert rv['code'] == 3
 
@@ -203,6 +204,7 @@ def testToken():
   assert rv['code'] == 0
   ## UNDONE: this is not failing
   rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName2)
+  print("rv['code']:",rv['code'])
   assert rv['code'] == 3
   rv = executeContract(addr, 'add_symptom', {'symptom_token': 408, 'batch_id': 4919}, caller=walletName3)
   assert rv['code'] == 3
@@ -210,8 +212,8 @@ def testToken():
   assert rv['threshold_reached'] == True
 
 
-  
-  
+
+
 def testIncrement():
   name = randomHexStr()
   id, addr = publishAndInitContract(name, params='{}')
@@ -271,7 +273,7 @@ def testIncrement():
   #
 
 
-  
+
 def testCountBehavior():
   # UNDONE(): test the behavior of getCount for when the user is the contract owner and when it is not.
   #
@@ -279,7 +281,7 @@ def testCountBehavior():
 
 if __name__ == "__main__":
   Setup()
-  testCreation()
+  # testCreation()
   testToken()
   # testIncrement()
   # testCountBehavior()
