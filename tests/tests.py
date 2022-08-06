@@ -212,7 +212,35 @@ def testToken():
   assert rv['threshold_reached'] == True
 
 
+def runDemo():
+  name = randomHexStr()
+  UI_AR = "secret1vp7lfaq2zzpy88d7q8m5sfed9qg0hf6rj0a5g0"
+  id, addr = publishAndInitContract(name, params=f'{{"pharmacists": ["{walletAddress2}","{UI_AR}"], "manufacturers": ["{walletAddress3}","{UI_AR}"]}}')
+  rv = executeContract(addr, 'create_batch', {'batch_id': 42, 'locations': ["Ithaca, NY, USA: 08/01/2022 to 08/07/2022"], 'threshold': 2}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == False
 
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 1, 'batch_id': 42}, caller=walletName2)
+  # print(json.dumps(rv, indent=2))
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 2, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_patient', {'symptom_token': 3, 'batch_id': 42}, caller=walletName2)
+  assert rv['code'] == 0
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 1, 'batch_id': 42}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == False
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 2, 'batch_id': 42}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == True
+  rv = executeContract(addr, 'add_symptom', {'symptom_token': 3, 'batch_id': 42}, caller=walletName3)
+  assert rv['code'] == 0
+  rv = queryContract(addr, 'check_batch', {'batch_id': 42})
+  assert rv['threshold_reached'] == True
+  assert rv['locations'] == ["Ithaca, NY, USA: 08/01/2022 to 08/07/2022"]
 
 def testIncrement():
   name = randomHexStr()
@@ -282,6 +310,6 @@ def testCountBehavior():
 if __name__ == "__main__":
   Setup()
   # testCreation()
-  testToken()
-  # testIncrement()
-  # testCountBehavior()
+  # testToken()
+  runDemo()
+
