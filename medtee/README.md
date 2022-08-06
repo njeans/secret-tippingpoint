@@ -1,18 +1,11 @@
-# Interacting with contracts
+# medTEE frontend
+Frontend for the **medTEE** application.
 
-This example shows how to create a contract definition and how to interact with the contract, 
-in a simple exercise by incrementing a counter by one. 
-
-## Run it locally
-
-### Install dependencies:
+## Develop & run
+To develop and run the frontend locally, use docker:
 
 ```bash
-yarn install
+docker-compose up
 ```
 
-### Serve the app:
-
-```bash
-yarn serve
-```
+Access the UI at http://localhost:58080

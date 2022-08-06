@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  medtee:
+    image: medtee
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 58080:8080
+    volumes:
+      - ./src:/usr/src/medtee/src
+    command: yarn serve
