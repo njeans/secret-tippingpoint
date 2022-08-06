@@ -1,11 +1,11 @@
 use cosmwasm_std::{
     to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
-    StdError, StdResult, Storage, 
+    StdError, StdResult, Storage,
     // CanonicalAddr,
 };
 // use base64::encode;
 
-use crate::msg::{HandleMsg, InitMsg, QueryMsg, CheckBatchResponse};
+use crate::msg::*;
 use crate::state::*;
 
 
@@ -15,9 +15,10 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     msg: InitMsg,
 ) -> StdResult<InitResponse> {
     let state = State {
+        count: 123,
         owner: deps.api.canonical_address(&env.message.sender)?,
     };
-    
+
 
     config(&mut deps.storage).save(&state)?;
 
@@ -67,13 +68,14 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     let m_key = m_key.concat();
     let m_exists: bool = load(&deps.storage, &m_key).unwrap_or(false);
     if !m_exists {
+        let m = format!("Manufacturer id: {} not found",m_id);
         return Err(StdError::GenericErr{
-            msg: "Manufacturer id not found".to_string(),
+            msg: m,
             backtrace: None
         });
     }
 
-    let state = BatchState {
+    let batch_state = BatchState {
         locations: l,
         threshold: t,
         count : 0
@@ -82,7 +84,7 @@ pub fn try_create_batch<S: Storage, A: Api, Q: Querier>(
     let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
     let batch_key:&[u8] = &batch_key.concat();
 
-    match register(&mut deps.storage, &batch_key, &state) {
+    match register(&mut deps.storage, &batch_key, &batch_state) {
         Ok(_) => {
             // debug_print("batch saved successfully");
             Ok(HandleResponse::default())
@@ -101,9 +103,10 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     let p_key = [CONFIG_KEY_P, p_id.as_slice()];
     let p_key = p_key.concat();
     let p_exists: bool = load(&deps.storage, &p_key).unwrap_or(false);
+    let m = format!("Pharmacist id: {} not found",p_id);
     if !p_exists {
         return Err(StdError::GenericErr{
-            msg: "Pharmacist id not found".to_string(),
+            msg: m,
             backtrace: None
         });
     }
@@ -111,11 +114,11 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     // UNDONE(1): Make sure batch exist:
     //
 
-    let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
-    let patient_key:&[u8] = &patient_key.concat();
-    let state = false;
+    let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
+    let token_key:&[u8] = &token_key.concat();
+    let token_state = false;
 
-    match register(&mut deps.storage, &patient_key, &state) {
+    match register(&mut deps.storage, &token_key, &token_state) {
         Ok(_) => {
             // debug_print("patient added successfully");
             return Ok(HandleResponse::default());
@@ -131,30 +134,44 @@ pub fn try_add_symptom<S: Storage, A: Api, Q: Querier>(
     st: SymptomToken,
     bid: BatchId,
 ) -> StdResult<HandleResponse> {
-    let patient_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
-    let patient_key:&[u8] = &patient_key.concat();
-    let st_used: bool = load(&deps.storage, &patient_key).unwrap_or(true);
+    let token_key = [CONFIG_KEY_P,&st.to_be_bytes(),&bid.to_be_bytes()];
+    let token_key:&[u8] = &token_key.concat();
+    let token_used: bool = load(&deps.storage, &token_key).unwrap_or(true);
 
-    if !st_used {
-        let batch_key = [CONFIG_KEY_B,&bid.to_be_bytes()];
-        let batch_key:&[u8] = &batch_key.concat();
+    if !token_used {
+        let batch_key = [CONFIG_KEY_B, &bid.to_be_bytes()];
+        let batch_key: &[u8] = &batch_key.concat();
         let mut batch_state: BatchState = match load(&deps.storage, &batch_key) {
             Ok(x) => x,
             Err(e) => {
                 return Err(e);
             }
         };
+
+        let token_key = [CONFIG_KEY_P, &st.to_be_bytes(), &bid.to_be_bytes()];
+        let token_key: &[u8] = &token_key.concat();
+        let token_state = true;
+        match update(&mut deps.storage, &token_key, &token_state) {
+            Ok(_) => {}
+            Err(e) => {
+                return Err(e)
+            }
+        }
+
         batch_state.count += 1;
         match update(&mut deps.storage, &batch_key, &batch_state) {
             Ok(_) => {
                 // debug_print("patient symptom added successfully");
                 return Ok(HandleResponse::default());
             }
-            Err(e) => Err(e)
+            Err(e) => {
+                return Err(e)
+            }
         }
     } else {
+        let m = format!("Symptom token: {} for batch id {} already used",st, bid);
         return Err(StdError::GenericErr{
-            msg: "Symptom token already used".to_string(),
+            msg: m,
             backtrace: None
         });
     }
@@ -166,28 +183,33 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
     msg: QueryMsg,
 ) -> StdResult<Binary> {
     match msg {
+        QueryMsg::GetCount {} => to_binary(&query_count(deps)?),
         QueryMsg::CheckBatch { batch_id } => to_binary(&query_check_batch(&deps, batch_id)?),
     }
 }
 
-fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, batchId: BatchId) -> StdResult<CheckBatchResponse> {
-    let key = [CONFIG_KEY_B, &batchId.to_be_bytes()];
+fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
+    let state = config_read(&deps.storage).load()?;
+    Ok(CountResponse { count: state.count })
+}
+
+
+fn query_check_batch<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>, batch_id: BatchId) -> StdResult<CheckBatchResponse> {
+    let key = [CONFIG_KEY_B, &batch_id.to_be_bytes()];
     let key = key.concat();
     // The following is failing, why?
-    let state: StdResult<BatchState> = load(&deps.storage, &key);
-    if !(state.is_ok()) {
-        return Err(StdError::GenericErr{
-            msg: "Batch id not found".to_string() + &base64::encode(&key),
-            backtrace: None
-        });
-    }
-    let state = state.ok().unwrap();
-
-    if (state.count >= state.threshold) {
-        return Ok(CheckBatchResponse { threshold_reached: true, locations: state.locations });
-    } else {
-        return Ok(CheckBatchResponse { threshold_reached: false, locations: state.locations });
-    }
+    let state: BatchState = match load(&deps.storage, &key){
+        Ok(x) => x,
+        Err(e) => {
+            let m = format!("Batch id not found: {}, {:?}",batch_id,e);
+            return Err(StdError::GenericErr{
+                msg: m,
+                backtrace: None
+            });
+        }
+    };
+    let tr = state.count >= state.threshold;
+    return Ok(CheckBatchResponse { threshold_reached: tr, locations: state.locations });
 }
 
 // #[cfg(test)]
