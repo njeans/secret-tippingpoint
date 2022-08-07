@@ -1,5 +1,10 @@
-import { createApp } from 'vue';
+import { createApp, use } from 'vue';
 import App from './App.vue';
+import Buefy from 'buefy'
+import 'buefy/dist/buefy.css'
+import Vue from "vue";
+
+
 import {
   gripApp,
   getKeplrAccountProvider
@@ -11,6 +16,7 @@ const restUrl = 'https://api.pulsar.scrttestnet.com';
 const provider = getKeplrAccountProvider();
 function runApp() {
   createApp(App)
+    .use(Buefy.Default)
     .mount('#app');
 }
 

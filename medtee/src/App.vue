@@ -1,21 +1,72 @@
 <template>
   <div>
-    <h1>medTEE</h1>
-      <p>Is connected? {{isConnected ? "Yes" : "No"}}</p>
-      <button
-        @click="connect"
-        :disabled="isConnected">
-        Bootstrap
-      </button>
-      <p>Your count is: {{count}}</p>
-      <p>Batch ID: 42, data:</p>
-      <p>threshold reached?: {{threshold_reached}}</p>
-      <p>locations: {{locations}}</p>
+  <div class="container">
+      <div class="level-item has-text-centered">
+        <h1 class="title">medTEE</h1>
+      </div>
+      <hr>
+      <br>
+      <div class="level-item has-text-centered">
+      <div>
+          <p class="heading">Is connected?  </p>
+          
+          <p class="title">{{isConnected ? "Yes" : "No"}}</p>
+      </div>
+        
+      </div>
+      <br>
+      <div class="level-item has-text-centered">
+
+        <button rounded class="button is-medium is-info is-light"
+          @click="connect"
+          :disabled="isConnected">
+          Bootstrap
+        </button>
+      </div>
+      <br>
+      <hr>
+      <nav class="level is-mobile">
+      <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Your count is: </p>
+            <p class="title">{{count}}</p>
+          </div>
+          </div>
+          <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Batch ID:</p>
+            <p class="title"> 42</p>
+          </div>
+          </div>
+          <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Data:</p>
+            <p class="title"> Dummy Data </p>
+          </div>
+          </div>
+
+          <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">threshold reached?: </p>
+            <p class="title"> {{threshold_reached}}</p> 
+          </div>
+          </div>
+          <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">locations:  </p>
+            <p class="title">{{locations}}</p>
+          </div>
+          </div>
+      </nav>
       <!-- <button @click="incrementCount">{{loading ? 'Loading...' : 'Increment by 1'}}</button> -->
-      <button @click="createBatch">{{loading ? 'creating...' : 'Create default batch'}}</button>
-      <button @click="addPatient">{{loading ? 'adding...' : 'Add patient'}}</button>
-      <button @click="getCount">Get count</button>
-      <button @click="checkBatch">Check batch</button>
+      <hr>
+      <div class="buttons level-item has-text-centered">
+        <button rounded class="button is-medium is-primary is-light" @click="createBatch">{{loading ? 'creating...' : 'Create default batch'}}</button>
+        <button rounded class="button is-medium is-primary is-light" @click="addPatient">{{loading ? 'adding...' : 'Add patient'}}</button>
+        <button rounded class="button is-medium is-primary is-light" @click="getCount">Get count</button>
+        <button rounded class="button is-medium is-primary is-light" @click="checkBatch">Check batch</button>
+      </div>
+    </div> 
   </div>
 </template>
 
@@ -24,6 +75,8 @@ import { counterContract } from './contracts/counter';
 import { bootstrap, onAccountAvailable } from '@stakeordie/griptape.js';
 
 export default {
+
+
   data: () => ({
     count: '',
     locations: [],
