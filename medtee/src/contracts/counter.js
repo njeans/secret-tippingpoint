@@ -20,7 +20,7 @@ const medteeDef = {
     addPatient() {
       const handleMsg = {
         add_patient: {
-          'symptom_token': 27,
+          'symptom_token': 1000,
           'batch_id': 42,
         }
       };
