@@ -10,8 +10,11 @@ import json
 from pprint import pprint
 from time import sleep
 
-from blessings import Terminal
-from colorama import init as init_colorama  # , Fore, Back, Style
+# from blessings import Terminal
+# from colorama import init as init_colorama  # , Fore, Back, Style
+BOLD = '\033[1m'+'\033[95m'
+B_C='\033[1m'
+END = '\033[0m'+'\033[0m'
 
 sb_wallet = "secret1vp7lfaq2zzpy88d7q8m5sfed9qg0hf6rj0a5g0"
 
@@ -353,7 +356,7 @@ def publish_and_init_contract():
     name = randomHexStr()
     id, addr = publishAndInitContract(
         name,
-        params=f'{{"pharmacists": ["{walletAddress2}","{sb_wallet}"], "manufacturers": ["{walletAddress3}","{sb_wallet}"]}}',
+        params=f'{{"pharmacists": ["{walletAddress2}"], "manufacturers": ["{walletAddress3}"]}}',
     )
     return addr
 
@@ -367,7 +370,7 @@ def create_batch(contract_addr, batch_id=42):
             "locations": ["Ithaca, NY, USA: 08/01/2022 to 08/07/2022"],
             "threshold": 2,
         },
-        caller=sb_wallet,
+        caller=walletAddress3,
     )
     assert rv["code"] == 0
     return rv
@@ -376,8 +379,9 @@ def create_batch(contract_addr, batch_id=42):
 def check_batch(addr, batch_id=42):
     rv = query_contract(addr, "check_batch", {"batch_id": batch_id})
     # assert rv["threshold_reached"] == False
-    print(f"threshold reached? {rv['threshold_reached']}")
-    print(f"locations: {rv['locations']}", end="\n\n")
+    C='\033[93m'
+    print(f"\t{C}threshold reached? {rv['threshold_reached']}{END}")
+    print(f"\t{C}locations: {rv['locations']}{END}", end="\n\n")
     return rv
 
 
@@ -542,14 +546,15 @@ if __name__ == "__main__":
     # testCreation()
     # testToken()
     # runDemo()
-
+    P_C='\033[96m'
+    M_C='\033[92m'
     print(
-        "\n\n\nPublishing and initializing the smart contract on the secret network ...",
+        "\n\n\n"+BOLD+"Publishing and initializing the smart contract on the secret network ...\n\t"+P_C+"with pharmacist "+walletAddress2+"\n\t"+M_C+"and manufacturer "+walletAddress3+ " "+END,
         end="\n\n",
     )
     contract_address = publish_and_init_contract()
     print(
-        f"DONE publishing and init contract ... at address: {contract_address}",
+        f"{BOLD}DONE publishing and init contract ... at address: {contract_address} {END}",
         end="\n\n",
     )
 
@@ -557,101 +562,101 @@ if __name__ == "__main__":
 
     batch_id = 42
     print(
-        f"Creating batch {batch_id} of medicine ...",
+        f"{B_C}{M_C}Manufacturer {walletAddress3} creating batch {batch_id} of medicine ...{END}",
         end="\n\n",
     )
     create_batch(contract_address, batch_id=batch_id)
-    print(f"DONE creating batch {batch_id}", end="\n\n")
+    # print(f"DONE creating batch {batch_id}", end="\n\n")
 
     sleep(5)
 
     print(
-        f"Checking batch {batch_id} ...",
+        f"\n{BOLD}Checking batch {batch_id} ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
 
     symptom_token = 1
     print(
-        f"Prescribing medicine to patient symptom token {symptom_token} ...",
+        f"\n{BOLD}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
         contract_address,
-        pharmacist_address=sb_wallet,
+        pharmacist_address=walletAddress2,
         symptom_token=symptom_token,
         batch_id=42,
     )
-    print(f"DONE adding patient for symptom token {symptom_token}", end="\n\n")
+    # print(f"{BOLD}DONE adding patient for symptom token {symptom_token}{END}", end="\n\n")
 
     print(
-        f"Checking batch {batch_id} to see changed threshold ...",
+        f"\n{BOLD}Checking batch {batch_id} to see changed threshold ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
 
     symptom_token = 2
     print(
-        f"Prescribing medicine to patient symptom token {symptom_token} ...",
+        f"{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
         contract_address,
-        pharmacist_address=sb_wallet,
+        pharmacist_address=walletAddress2,
         symptom_token=symptom_token,
         batch_id=42,
     )
-    print(f"DONE adding patient for symptom token {symptom_token}", end="\n\n")
+    # print(f"{BOLD}DONE adding patient for symptom token {symptom_token}{END}", end="\n\n")
 
     symptom_token = 3
     print(
-        f"Prescribing medicine to patient symptom token {symptom_token} ...",
+        f"{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
         contract_address,
-        pharmacist_address=sb_wallet,
+        pharmacist_address=walletAddress2,
         symptom_token=symptom_token,
         batch_id=42,
     )
-    print(f"DONE adding patient for symptom token {symptom_token}", end="\n\n")
+    # print(f"{BOLD}DONE adding patient for symptom token {symptom_token}{END}", end="\n\n")
 
     print(
-        f"Checking batch {batch_id} to see changed threshold ...",
+        f"\n{BOLD}Checking batch {batch_id} to see changed threshold ...",
         end="\n\n",
     )
 
     sleep(3)
 
     print(
-        f"Reporting symptoms for patient with symptom token 1, batch id 42 ...",
+        f"{BOLD}Reporting symptoms for patient with symptom token 1, batch id 42 ...{END}",
         end="\n\n",
     )
     add_symptom(contract_address, symptom_token=1, batch_id=42)
 
     sleep(3)
     print(
-        f"Checking batch {batch_id} to see changed threshold ...",
+        f"{BOLD}Checking batch {batch_id} to see changed threshold ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
 
     print(
-        f"Reporting symptoms for patient with symptom token 2, batch id 42 ...",
+        f"{BOLD}Reporting symptoms for patient with symptom token 2, batch id 42 ...{END}",
         end="\n\n",
     )
     add_symptom(contract_address, symptom_token=2, batch_id=42)
     sleep(3)
 
     print(
-        f"Reporting symptoms for patient with symptom token 3, batch id 42 ...",
+        f"{BOLD}Reporting symptoms for patient with symptom token 3, batch id 42 ...{END}",
         end="\n\n",
     )
     add_symptom(contract_address, symptom_token=3, batch_id=42)
 
     sleep(3)
     print(
-        f"Checking batch {batch_id} to see changed threshold ...",
+        f"\n{BOLD}Checking batch {batch_id} to see changed threshold ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
