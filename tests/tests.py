@@ -578,7 +578,7 @@ if __name__ == "__main__":
 
     symptom_token = 1
     print(
-        f"\n{BOLD}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
+        f"\n{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
@@ -597,7 +597,7 @@ if __name__ == "__main__":
 
     symptom_token = 2
     print(
-        f"{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
+        f"\n{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
@@ -610,7 +610,7 @@ if __name__ == "__main__":
 
     symptom_token = 3
     print(
-        f"{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
+        f"\n{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
