@@ -103,7 +103,6 @@ pub fn try_add_patient<S: Storage, A: Api, Q: Querier>(
     let p_key = [CONFIG_KEY_P, p_id.as_slice()];
     let p_key = p_key.concat();
     let p_exists: bool = load(&deps.storage, &p_key).unwrap_or(false);
-    let m = format!("Pharmacist id: {} not found",p_id);
     if !p_exists {
         let m = format!("Pharmacist id: {} not found", p_id);
         return Err(StdError::GenericErr{
