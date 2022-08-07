@@ -9,10 +9,8 @@
       <div class="level-item has-text-centered">
       <div>
           <p class="heading">Is connected?  </p>
-          
           <p class="title">{{isConnected ? "Yes" : "No"}}</p>
       </div>
-        
       </div>
       <br>
       <div class="level-item has-text-centered">
@@ -48,7 +46,7 @@
           <div class="level-item has-text-centered">
           <div>
             <p class="heading">threshold reached?: </p>
-            <p class="title"> {{threshold_reached}}</p> 
+            <p class="title"> {{threshold_reached}}</p>
           </div>
           </div>
           <div class="level-item has-text-centered">
@@ -66,7 +64,7 @@
         <button rounded class="button is-medium is-primary is-light" @click="getCount">Get count</button>
         <button rounded class="button is-medium is-primary is-light" @click="checkBatch">Check batch</button>
       </div>
-    </div> 
+    </div>
   </div>
 </template>
 
@@ -118,10 +116,17 @@ export default {
       this.loading = false;
     },
 
+    //async addPatient() {
+    //  this.loading = true;
+    //  await counterContract.addPatient();
+    //  this.loading = false;
+    //}
     async addPatient() {
       this.loading = true;
-      await counterContract.addPatient();
-      this.loading = false;
+      setTimeout(async () => {
+        await counterContract.addPatient();
+        this.loading = false;
+      }, 100);
     }
     //async incrementCount() {
     //  this.loading = true;

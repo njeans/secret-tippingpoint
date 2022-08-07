@@ -8,4 +8,6 @@ COPY . .
 
 WORKDIR /usr/src/medtee
 
-RUN yarn && yarn add @stakeordie/griptape.js
+RUN yarn
+#RUN yarn && yarn add @stakeordie/griptape.js
+#RUN yarn add --save --force buefy
