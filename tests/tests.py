@@ -378,6 +378,7 @@ def check_batch(addr, batch_id=42):
     rv = query_contract(addr, "check_batch", {"batch_id": batch_id})
     # assert rv["threshold_reached"] == False
     C='\033[93m'
+    END = '\033[0m'
     print(f"\t{C}threshold reached? {rv['threshold_reached']}{END}")
     print(f"\t{C}locations: {rv['locations']}{END}", end="\n\n")
     return rv
