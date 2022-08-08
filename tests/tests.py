@@ -12,9 +12,7 @@ from time import sleep
 
 # from blessings import Terminal
 # from colorama import init as init_colorama  # , Fore, Back, Style
-BOLD = '\033[1m'+'\033[95m'
-B_C='\033[1m'
-END = '\033[0m'+'\033[0m'
+
 
 sb_wallet = "secret1vp7lfaq2zzpy88d7q8m5sfed9qg0hf6rj0a5g0"
 
@@ -546,15 +544,18 @@ if __name__ == "__main__":
     # testCreation()
     # testToken()
     # runDemo()
-    P_C='\033[96m'
-    M_C='\033[92m'
+    BOLD_C = '\033[1m'
+    Pharm_C = BOLD_C +'\033[96m'
+    Manu_C = BOLD_C +'\033[92m'
+    Gen_C = BOLD_C +'\033[95m'
+    END = '\033[0m'
     print(
-        "\n\n\n"+BOLD+"Publishing and initializing the smart contract on the secret network ...\n\t"+P_C+"with pharmacist "+walletAddress2+"\n\t"+M_C+"and manufacturer "+walletAddress3+ " "+END,
+        "\n\n\n"+Gen_C+"Publishing and initializing the smart contract on the secret network ...\n\t"+Pharm_C+"with pharmacist "+walletAddress2+"\n\t"+Manu_C+"and manufacturer "+walletAddress3+END,
         end="\n\n",
     )
     contract_address = publish_and_init_contract()
     print(
-        f"{BOLD}DONE publishing and init contract ... at address: {contract_address} {END}",
+        f"{Gen_C}DONE publishing and init contract ... at address: {contract_address} {END}",
         end="\n\n",
     )
 
@@ -562,7 +563,7 @@ if __name__ == "__main__":
 
     batch_id = 42
     print(
-        f"{B_C}{M_C}Manufacturer {walletAddress3} creating batch {batch_id} of medicine ...{END}",
+        f"{Manu_C}Manufacturer {walletAddress3} creating batch {batch_id} of medicine ...{END}",
         end="\n\n",
     )
     create_batch(contract_address, batch_id=batch_id)
@@ -571,14 +572,14 @@ if __name__ == "__main__":
     sleep(5)
 
     print(
-        f"\n{BOLD}Checking batch {batch_id} ...{END}",
+        f"\n{Gen_C}Checking batch {batch_id} ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
 
     symptom_token = 1
     print(
-        f"\n{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
+        f"\n{Pharm_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
@@ -587,17 +588,16 @@ if __name__ == "__main__":
         symptom_token=symptom_token,
         batch_id=42,
     )
-    # print(f"{BOLD}DONE adding patient for symptom token {symptom_token}{END}", end="\n\n")
 
     print(
-        f"\n{BOLD}Checking batch {batch_id} to see changed threshold ...{END}",
+        f"\n{Gen_C}Checking batch {batch_id} to see changed threshold ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
 
     symptom_token = 2
     print(
-        f"\n{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
+        f"\n{Pharm_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
@@ -606,11 +606,10 @@ if __name__ == "__main__":
         symptom_token=symptom_token,
         batch_id=42,
     )
-    # print(f"{BOLD}DONE adding patient for symptom token {symptom_token}{END}", end="\n\n")
 
     symptom_token = 3
     print(
-        f"\n{B_C}{P_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
+        f"\n{Pharm_C}Pharmacist {walletAddress2 } prescribing medicine to patient symptom token {symptom_token} ...{END}",
         end="\n\n",
     )
     add_patient(
@@ -619,44 +618,43 @@ if __name__ == "__main__":
         symptom_token=symptom_token,
         batch_id=42,
     )
-    # print(f"{BOLD}DONE adding patient for symptom token {symptom_token}{END}", end="\n\n")
 
     print(
-        f"\n{BOLD}Checking batch {batch_id} to see changed threshold ...",
+        f"\n{Gen_C}Checking batch {batch_id} to see changed threshold ...",
         end="\n\n",
     )
 
     sleep(3)
 
     print(
-        f"{BOLD}Reporting symptoms for patient with symptom token 1, batch id 42 ...{END}",
+        f"{Gen_C}Reporting symptoms for patient with symptom token 1, batch id 42 ...{END}",
         end="\n\n",
     )
     add_symptom(contract_address, symptom_token=1, batch_id=42)
 
     sleep(3)
     print(
-        f"{BOLD}Checking batch {batch_id} to see changed threshold ...{END}",
+        f"{Gen_C}Checking batch {batch_id} to see changed threshold ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
 
     print(
-        f"{BOLD}Reporting symptoms for patient with symptom token 2, batch id 42 ...{END}",
+        f"{Gen_C}Reporting symptoms for patient with symptom token 2, batch id 42 ...{END}",
         end="\n\n",
     )
     add_symptom(contract_address, symptom_token=2, batch_id=42)
     sleep(3)
 
     print(
-        f"{BOLD}Reporting symptoms for patient with symptom token 3, batch id 42 ...{END}",
+        f"{Gen_C}Reporting symptoms for patient with symptom token 3, batch id 42 ...{END}",
         end="\n\n",
     )
     add_symptom(contract_address, symptom_token=3, batch_id=42)
 
     sleep(3)
     print(
-        f"\n{BOLD}Checking batch {batch_id} to see changed threshold ...{END}",
+        f"\n{Gen_C}Checking batch {batch_id} to see changed threshold ...{END}",
         end="\n\n",
     )
     check_batch(contract_address, batch_id=batch_id)
