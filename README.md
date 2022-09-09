@@ -1,68 +1,26 @@
-# Secret Contracts Starter Pack
+# MedTrace
+This project was completed for IC3 2022 Camp Hackathon (2nd Place)
 
-This is a template to build secret contracts in Rust to run in
-[Secret Network](https://github.com/enigmampc/SecretNetwork).
-To understand the framework better, please read the overview in the
-[cosmwasm repo](https://github.com/CosmWasm/cosmwasm/blob/master/README.md),
-and dig into the [cosmwasm docs](https://www.cosmwasm.com).
-This assumes you understand the theory and just want to get coding.
+## Exaplanation Slides
+[slides](https://docs.google.com/presentation/d/1wSdZ-LFQ6cE-TV7JmsYidm7367ONyk6vjcO6R16wLYw/edit?usp=sharing)
 
-## Creating a new repo from template
+## Abstract
+We aim to create a private and traceable application that can be used for patients to track and be notified of contamination of medical products such as medicine, vaccines, medical devices, etc. Current methods are not user friendly and are not effective at notifying all users who may be effected. Our solution uses the secure enclave backed blockchain platform [Secret Network](https://scrt.network) to implement a private smart contract that can be used by manufacturers, doctors, pharmacists, patients, regulators, and in neccesary cases the public. We also aim to protect manufacturer interests by only revealing adverse affects that have met the predetermined threshold.
 
-Assuming you have a recent version of rust and cargo installed (via [rustup](https://rustup.rs/)),
-then the following should get you a new repo to start a contract:
+## Architecture
+* First our system is initialized with a list of known manufacturers and pharmacists who will be creating and dispensing the perscribed drugs or other products. [init](https://github.com/njeans/secret-tippingpoint/blob/master/src/contract.rs#L25)
+* As the products are created through the supply chain the manufacturers will update the given batch with relevant information using [`create_batch`](https://github.com/njeans/secret-tippingpoint/blob/master/src/contract.rs#L58) function 
+* Once a medicine is prescribed the pharmacist will provide the patient with a `symptom_token` unique to the patient and batch number. They will also call the [`add_patient`](https://github.com/njeans/secret-tippingpoint/blob/master/src/contract.rs#L96) method which will privately record this information.
+* If a patient has a symptom caused by the product they will go to a doctor which will use the unique `symptom_token` to record the adverse affect privately in the blockchain using [`add_symptom`](https://github.com/njeans/secret-tippingpoint/blob/master/src/contract.rs#L96).
+* If the predetermined threshold of symptoms is reached this information will become public to regulators and the general population. Regulators will be able to track the potential batch using the manufacturer locations and potentially cross reference with other products that could be contaminated.
 
-First, install
-[cargo-generate](https://github.com/ashleygwilliams/cargo-generate).
-Unless you did that before, run this line now:
+<img width="1046" alt="Screen Shot 2022-09-09 at 9 25 22 AM" src="https://user-images.githubusercontent.com/12213974/189360381-4729e8d8-13c4-4d5d-b69c-f3b94a775ada.png">
 
-```sh
-cargo install cargo-generate --features vendored-openssl
+## Demo 
+
 ```
-
-Now, use it to create your new contract.
-Go to the folder in which you want to place it and run:
-
-```sh
-cargo generate --git https://github.com/enigmampc/secret-template.git --name YOUR_NAME_HERE
+cd test
+export PATH=$PATH:${PWD}
+cd ..
+python3 tests/tests.py
 ```
-
-You will now have a new folder called `YOUR_NAME_HERE` (I hope you changed that to something else)
-containing a simple working contract and build system that you can customize.
-
-Don't forget to change the `name` and the `authors` fields in the `Cargo.toml` file.
-
-## Create a Repo
-
-After generating, you have a initialized local git repo, but no commits, and no remote.
-Go to a server (eg. github) and create a new upstream repo (called `YOUR-GIT-URL` below).
-Then run the following:
-
-```sh
-# this is needed to create a valid Cargo.lock file (see below)
-cargo check
-git checkout -b master # in case you generate from non-master
-git add .
-git commit -m 'Initial Commit'
-git remote add origin YOUR-GIT-URL
-git push -u origin master
-```
-
-## Using your project
-
-Once you have your custom repo, you should check out [Developing](./Developing.md) to explain
-more on how to run tests and develop code. Or go through the
-[online tutorial](https://www.cosmwasm.com/docs/getting-started/intro) to get a better feel
-of how to develop.
-
-[Publishing](./Publishing.md) contains useful information on how to publish your contract
-to the world, once you are ready to deploy it on a running blockchain. And
-[Importing](./Importing.md) contains information about pulling in other contracts or crates
-that have been published.
-
-You can also find lots of useful recipes in the `Makefile` which you can use
-if you have `make` installed (very recommended. at least check them out).
-
-Please replace this README file with information about your specific project. You can keep
-the `Developing.md` and `Publishing.md` files as useful referenced, but please set some
-proper description in the README.
